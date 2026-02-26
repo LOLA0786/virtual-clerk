@@ -49,3 +49,12 @@ python3 -m venv venv
 source venv/bin/activate
 pip install typer rich
 python vc.py alerts
+
+## Features
+
+- Court listing detection
+- Bench & courtroom intelligence
+- Sequence position detection
+- Order document parsing
+- CLI workflow for litigation tracking
+
