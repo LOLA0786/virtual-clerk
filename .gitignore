@@ -3,3 +3,12 @@ __pycache__/
 *.pyc
 .DS_Store
 data/cases.json
+
+# local runtime data
+benches/
+orders/
+*.pdf
+__pycache__/
+*.pyc
+venv/
+.env
