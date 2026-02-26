@@ -39,3 +39,13 @@ python vc.py alerts
 - Order PDF intelligence
 
 Built in Mumbai 🇮🇳
+
+## ⚡ Quick Start
+
+```bash
+git clone https://github.com/LOLA0786/virtual-clerk.git
+cd virtual-clerk
+python3 -m venv venv
+source venv/bin/activate
+pip install typer rich
+python vc.py alerts
