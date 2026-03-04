@@ -1,14 +1,18 @@
-venv/
-__pycache__/
-*.pyc
-.DS_Store
-data/cases.json
+# Captcha images
+*.png
+tmp*.png
 
-# local runtime data
-benches/
-orders/
-*.pdf
+# Test scripts
+test_*.py
+
+# Large response files
+response.html
+advocate_results.html
+
+# Sensitive data
+data/subscribers.json
+
+# Python cache
 __pycache__/
 *.pyc
 venv/
-.env
