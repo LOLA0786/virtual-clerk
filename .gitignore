@@ -1,18 +1,16 @@
-# Captcha images
-*.png
-tmp*.png
-
-# Test scripts
-test_*.py
-
-# Large response files
-response.html
-advocate_results.html
-
-# Sensitive data
-data/subscribers.json
-
-# Python cache
+venv/
 __pycache__/
 *.pyc
-venv/
+
+# runtime data
+data/cases_*.json
+
+# test files
+simulate_*.py
+search_*.py
+
+# PDFs
+*.pdf
+
+# OS files
+.DS_Store

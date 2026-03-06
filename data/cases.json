@@ -1,0 +1,12 @@
+{
+  "WP-1234-2024": {
+    "court": "BombayHC",
+    "last_checked": null,
+    "last_status": {
+      "next_date": "2026-02-26",
+      "judge": "Justice Patel",
+      "stage": "Final Hearing",
+      "courtroom": 31
+    }
+  }
+}

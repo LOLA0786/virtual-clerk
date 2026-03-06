@@ -39,6 +39,34 @@ def solve_captcha(session):
         if len(result) == 5: return result
     return None
 
+
+def get_case_detail(session, case_no, cino, court_code, token):
+    """Fetch next hearing date and bench for a case."""
+    try:
+        r = session.post(BASE+"cases/o_civil_case_history.php",
+            data={"court_code":court_code,"state_code":"1","dist_code":"1",
+                  "case_no":case_no,"cino":cino,"token":token,"appFlag":""},
+            headers={**UA,
+                "Referer":BASE+"cases/qs_civil_advocate.php?state_cd=1&dist_cd=1&court_code=1&stateNm=",
+                "X-Requested-With":"XMLHttpRequest"}, timeout=10)
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(r.text, 'html.parser')
+        for table in soup.find_all('table'):
+            headers = [th.get_text(strip=True) for th in table.find_all('th')]
+            if 'Hearing Date' in headers:
+                rows = table.find_all('tr')
+                # Last row with a hearing date = most recent/next
+                last = None
+                for row in rows[1:]:
+                    cols = [td.get_text(strip=True) for td in row.find_all('td')]
+                    if len(cols) >= 4 and cols[3]:
+                        last = cols
+                if last:
+                    return {"next_date": last[3], "bench": last[1], "purpose": last[4] if len(last)>4 else ""}
+    except Exception as e:
+        pass
+    return {}
+
 def parse_cases(raw):
     raw = raw.replace("&amp;","&").replace("&nbsp;"," ").replace('\ufeff','')
     raw = re.sub(r'<br\s*/?>', '|', raw)
@@ -62,7 +90,10 @@ def parse_cases(raw):
         if case_no:
             cases.append({"case_no": case_no, "petitioner": pet.strip(),
                           "respondent": resp.strip(), "cnr": cnr,
-                          "court": court, "advocates": advocates})
+                          "court": court, "advocates": advocates,
+                          "_internal": parts[0].strip(),
+                          "_court_code": parts[4].strip() if len(parts)>4 else "1",
+                          "_token": parts[9].strip() if len(parts)>9 else ""})
     return cases
 
 def search_advocate(name, date_dmy):
@@ -99,18 +130,27 @@ def search_party(name):
                  "X-Requested-With":"XMLHttpRequest"})
     print(f"  Response size: {len(r2.text)}")
     if len(r2.text) < 20: return []
-    return parse_cases(r2.text)
+    cases = parse_cases(r2.text)
+    print(f"  Fetching next dates for {min(len(cases),50)} cases...")
+    for c in cases[:50]:
+        detail = get_case_detail(session, c["_internal"], c["cnr"], c["_court_code"], c["_token"])
+        c.update(detail)
+    return cases
 
 def build_email(sub, cases, date_str):
     rows = ""
     for c in cases:
         advocates = ", ".join(c["advocates"]) if c["advocates"] else "-"
+        next_date = c.get("next_date","—")
+        bench     = c.get("bench","—")
+        purpose   = c.get("purpose","")
         rows += f"""<tr>
           <td style='padding:6px 10px;font-weight:bold;color:#1a237e;'>{c['case_no']}</td>
-          <td style='padding:6px 10px;'>{c['petitioner'][:60]}</td>
-          <td style='padding:6px 10px;'>{c['respondent'][:60]}</td>
-          <td style='padding:6px 10px;font-size:11px;color:#555;'>{c['cnr']}</td>
-          <td style='padding:6px 10px;font-size:11px;'>{advocates[:60]}</td>
+          <td style='padding:6px 10px;'>{c['petitioner'][:50]}</td>
+          <td style='padding:6px 10px;'>{c['respondent'][:50]}</td>
+          <td style='padding:6px 10px;font-size:12px;background:#e8f5e9;font-weight:bold;'>{next_date}</td>
+          <td style='padding:6px 10px;font-size:11px;'>{bench[:50]}</td>
+          <td style='padding:6px 10px;font-size:11px;color:#555;'>{purpose}</td>
         </tr>"""
     return f"""<html><body style='font-family:Arial,sans-serif;font-size:14px;max-width:950px;margin:auto;'>
     <h2 style='color:#1a237e;'>⚖️ Bombay HC — Your Listed Cases · {date_str}</h2>
@@ -119,8 +159,8 @@ def build_email(sub, cases, date_str):
     <table border='1' cellspacing='0' style='border-collapse:collapse;width:100%;font-size:13px;'>
       <tr style='background:#1a237e;color:white;text-align:left;'>
         <th style='padding:8px;'>Case No</th><th style='padding:8px;'>Petitioner</th>
-        <th style='padding:8px;'>Respondent</th><th style='padding:8px;'>CNR</th>
-        <th style='padding:8px;'>Advocates</th>
+        <th style='padding:8px;'>Respondent</th><th style='padding:8px;'>Next Date</th>
+        <th style='padding:8px;'>Bench</th><th style='padding:8px;'>Purpose</th>
       </tr>{rows}
     </table>
     <p style='margin-top:16px;'>
