@@ -1,16 +1,22 @@
-venv/
+# Python
 __pycache__/
 *.pyc
+venv/
+
+# local database
+*.db
 
 # runtime data
-data/cases_*.json
+data/*.json
 
-# test files
-simulate_*.py
-search_*.py
+# images / captcha
+*.png
 
-# PDFs
-*.pdf
+# html dumps
+*.html
 
-# OS files
+# temporary files
+tmp*
+
+# macOS
 .DS_Store
