@@ -20,3 +20,16 @@ tmp*
 
 # macOS
 .DS_Store
+
+# test scripts
+test_*.py
+
+# debug scripts
+simulate_*.py
+search_*.py
+
+# court pdf downloads
+*.pdf
+benches/
+orders/
+
