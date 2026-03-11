@@ -39,3 +39,30 @@ def list_advocates():
     advs = db.query(Advocate).all()
 
     return advs
+
+@app.get("/cases")
+def list_cases():
+    db = SessionLocal()
+    return db.query(Advocate).all()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.get("/hearings/today")
+def hearings_today():
+    return {
+        "hearings":[
+            {
+                "case":"ABC123",
+                "court":"Court 32",
+                "time":"11:00"
+            }
+        ]
+    }
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
